@@ -295,6 +295,16 @@ def _build_rag(base_dir: str):
     from raganything import RAGAnything, RAGAnythingConfig
 
     working_dir, lr_kwargs = st_storage.resolve(cfg, base_dir)
+    lr_kwargs = dict(lr_kwargs or {})
+    # Concorrência de embedding: Ollama/LM Studio são single-instance e serializam —
+    # muitos workers concorrentes (default 8 do LightRAG) enfileiram e estouram o timeout
+    # de 60s. Reduz p/ backend local; nuvem (openai/claude) aguenta o default.
+    _provider = (cfg.backend or {}).get("provider", "ollama")
+    _max_async = getattr(cfg, "embedding_max_async", 0) or 0
+    if _max_async > 0:
+        lr_kwargs.setdefault("embedding_func_max_async", _max_async)
+    elif _provider in ("ollama", "lmstudio"):
+        lr_kwargs.setdefault("embedding_func_max_async", 2)
     llm_func, vision_func, emb_func = st_backends.build_funcs(cfg)
     rconf = RAGAnythingConfig(
         working_dir=working_dir, parser=cfg.parser, parse_method=cfg.parse_method,
@@ -304,7 +314,7 @@ def _build_rag(base_dir: str):
         llm_model_func=llm_func,
         vision_model_func=vision_func,
         embedding_func=emb_func,
-        lightrag_kwargs=lr_kwargs or {},
+        lightrag_kwargs=lr_kwargs,
     )
     return rag, cfg
 

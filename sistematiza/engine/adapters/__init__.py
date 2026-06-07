@@ -8,10 +8,15 @@ from __future__ import annotations
 from typing import Optional, List
 
 from .base import SourceAdapter, ContentBlock  # noqa: F401 (reexport)
+from .video import VideoAdapter
+from .notion import NotionAdapter
 from .web import WebAdapter
 
-# ordem = prioridade de resolução
+# ordem = prioridade de resolução: adapters ESPECÍFICOS antes do web,
+# que casa qualquer https:// (senão uma URL do YouTube/Notion cairia no web).
 _ADAPTERS: List[SourceAdapter] = [
+    VideoAdapter(),
+    NotionAdapter(),
     WebAdapter(),
 ]
 

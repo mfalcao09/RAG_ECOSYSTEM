@@ -19,3 +19,4 @@ ollama
 #   - LibreOffice  → conversão Office (.docx/.pptx/.xlsx) para PDF
 #   - modelos MinerU (~1GB) baixados no 1º parse (precisa de rede uma vez)
 trafilatura>=2.0  # web_adapter: URL->markdown
+yt-dlp  # video_adapter: YouTube legendas->markdown

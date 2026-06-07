@@ -80,3 +80,20 @@ Início da virada "sistematiza" (arquivos) → **RAG_ECOSYSTEM** (qualquer fonte
 - **E2E web PROVADO**: `https://example.com` → grafo (6 nós/3 arestas) + `vdb_*.json`; `query` com `Referências: https://example.com` (57s ingest / 31s query). +7 testes → **26/26 verdes**.
 
 **Próximo:** `video_adapter` (YouTube via `yt-dlp`+Gemini) → `docs_adapter` (Notion) → áudio/db/comms (§6 do ARSENAL).
+
+## Review v5 — video_adapter + docs_adapter (Notion) em PARALELO (2026-06-07)
+
+2 fontes construídas EM PARALELO (2 subagentes com contrato compartilhado `base.py`/`web.py`), provadas E2E pelo orquestrador.
+
+**Entregue:**
+- **`video_adapter`** (`adapters/video.py`): YouTube → `yt-dlp` (legendas, sem baixar vídeo) → markdown → `insert_content_list`. E2E: vídeo 3Blue1Brown → query recupera **"28×28 / 784"** com citação. 16 testes unitários.
+- **`docs_adapter`** (`adapters/notion.py`): Notion API (token `NOTION_TOKEN` do env) → blocos→markdown → RAG. E2E: página da sessão → query recupera **cliSessionId/sessionId** com citação. 17 testes.
+- **Wiring**: `_ADAPTERS = [Video, Notion, Web]` (específicos antes do web genérico). Roteamento testado (smoke PASS).
+- **Fix de concorrência** (`st_config.embedding_max_async` + `_build_rag`): Ollama local estourava timeout de 60s com 8 workers de embedding; reduzido p/ 2 (auto). Sem isso, vídeo (muitos chunks) falhava no flush do `vdb`.
+- **59 testes verdes** (26 base + 16 vídeo + 17 Notion).
+
+**Padrão validado:** subagentes paralelos + contrato compartilhado = 0 conflito (cada um só criou `<fonte>.py`+teste; orquestrador fez wiring/E2E). 2 adapters em ~5 min wall-clock.
+
+**Gaps anotados:** (1) `can_handle` Notion cobre `notion.so/.site`, não `notion.com` (URLs reais são `app.notion.com` → usei `notion:<id>`); (2) query default poderia variar por tipo de fonte (narrativa→naive).
+
+**Próximo (§6):** `audio_adapter` (faster-whisper) → `db_adapter` (Supabase) → `comms_adapter`.

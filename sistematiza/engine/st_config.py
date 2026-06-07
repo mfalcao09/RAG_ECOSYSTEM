@@ -72,6 +72,10 @@ class BaseConfig:
     # sem GPU forte). "hybrid-auto-engine"/"vlm-auto-engine" = alta acurácia via VLM, mas
     # exigem VRAM — em RAM apertada estouram (OOM em "Predict: 0%"). Configurável por base.
     mineru_backend: str = "pipeline"
+    # Concorrência máx. de chamadas de embedding. 0 = automático (2 p/ backend local
+    # Ollama/LM Studio, que serializam e estouram o timeout de 60s com muitos workers;
+    # default do LightRAG = 8, ok só p/ nuvem). Suba se o endpoint aguentar concorrência.
+    embedding_max_async: int = 0
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), ensure_ascii=False, indent=2)

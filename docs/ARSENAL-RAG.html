@@ -176,15 +176,25 @@ class SourceAdapter(Protocol):
 <td>✅ cristalizado (<code>.md</code>/<code>.html</code>)</td>
 </tr>
 <tr>
-<td><code>web_adapter</code> (1ª fonte externa)</td>
-<td>✅ <strong>E2E provado</strong> — URL→query com citação (trafilatura + fallback bs4); <code>engine/adapters/</code></td>
+<td><code>web_adapter</code></td>
+<td>✅ <strong>E2E provado</strong> — URL→query c/ citação (trafilatura + fallback bs4)</td>
 </tr>
 <tr>
-<td>Demais adapters</td>
+<td><code>video_adapter</code> (YouTube)</td>
+<td>✅ <strong>E2E provado</strong> — <code>yt-dlp</code> legendas→query (28×28/784 do 3Blue1Brown)</td>
+</tr>
+<tr>
+<td><code>docs_adapter</code> (Notion)</td>
+<td>✅ <strong>E2E provado</strong> — Notion API→query (cliSessionId/sessionId)</td>
+</tr>
+<tr>
+<td>áudio · DB · comms</td>
 <td>📋 backlog priorizado (§6)</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Provado (2026-06-07):</strong> <code>sistematiza ingest &lt;base&gt; https://example.com</code> → grafo (6 nós/3 arestas) + <code>vdb_*.json</code>; <code>query</code> recupera o conteúdo <strong>com <code>Referências: https://example.com</code></strong>, em 57s (ingest) / 31s (query), <strong>sem MinerU</strong> (a URL já chega como markdown). 26/26 testes (7 de adapters).</p>
-<p><strong>Próximo passo imediato:</strong> <code>video_adapter</code> (YouTube/<code>yt-dlp</code>+Gemini) — 2ª fonte da ordem de ataque.</p>
+<p><strong>Provado (2026-06-07): 3 fontes externas E2E</strong> — web (<code>example.com</code>), YouTube (<code>yt-dlp</code> legendas, construído em paralelo), Notion (API, construído em paralelo). Cada uma: <code>ref → adapter → insert_content_list → grafo+vdb → query</code> <strong>com citação da fonte</strong>, sem tocar o core. <strong>59 testes</strong> (26 base + 16 vídeo + 17 Notion).</p>
+<p><strong>Fix de escala (2026-06-07):</strong> backend local (Ollama) estourava o timeout de 60s do embedding com 8 workers concorrentes (default LightRAG); novo <code>embedding_max_async</code> (auto=2 p/ local) resolveu — sem ele, fontes com muitos chunks (vídeo) falhavam no flush do <code>vdb</code>.</p>
+<p><strong>Aprendizado de query:</strong> para conteúdo <strong>narrativo</strong> (transcrição/prosa), <code>naive</code>/<code>mix</code> recuperam melhor que <code>hybrid</code> (que depende do grafo de entidades); <code>hybrid</code> brilha em docs com entidades discretas (normas).</p>
+<p><strong>Próximo passo:</strong> <code>audio_adapter</code> (faster-whisper) → <code>db_adapter</code> (Supabase) → <code>comms_adapter</code>.</p>
 <hr><p style="color:#6e7681;font-size:.85em">Gerado de <code>ARSENAL-RAG.md</code> · RAG_ECOSYSTEM · self-contained</p></body></html>

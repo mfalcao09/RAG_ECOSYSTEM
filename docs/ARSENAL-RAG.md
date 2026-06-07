@@ -117,9 +117,15 @@ Cada fonte entra com **prova E2E real** (URL/arquivo real → query recupera fat
 | Motor RAG documental (PDF/Office/imagem) | ✅ E2E provado (Ollama+MinerU local, 19/19 testes) |
 | Versionamento (`RAG_ECOSYSTEM`) | ✅ commit `022bc57` |
 | Este mapa do arsenal | ✅ cristalizado (`.md`/`.html`) |
-| `web_adapter` (1ª fonte externa) | ✅ **E2E provado** — URL→query com citação (trafilatura + fallback bs4); `engine/adapters/` |
-| Demais adapters | 📋 backlog priorizado (§6) |
+| `web_adapter` | ✅ **E2E provado** — URL→query c/ citação (trafilatura + fallback bs4) |
+| `video_adapter` (YouTube) | ✅ **E2E provado** — `yt-dlp` legendas→query (28×28/784 do 3Blue1Brown) |
+| `docs_adapter` (Notion) | ✅ **E2E provado** — Notion API→query (cliSessionId/sessionId) |
+| áudio · DB · comms | 📋 backlog priorizado (§6) |
 
-**Provado (2026-06-07):** `sistematiza ingest <base> https://example.com` → grafo (6 nós/3 arestas) + `vdb_*.json`; `query` recupera o conteúdo **com `Referências: https://example.com`**, em 57s (ingest) / 31s (query), **sem MinerU** (a URL já chega como markdown). 26/26 testes (7 de adapters).
+**Provado (2026-06-07): 3 fontes externas E2E** — web (`example.com`), YouTube (`yt-dlp` legendas, construído em paralelo), Notion (API, construído em paralelo). Cada uma: `ref → adapter → insert_content_list → grafo+vdb → query` **com citação da fonte**, sem tocar o core. **59 testes** (26 base + 16 vídeo + 17 Notion).
 
-**Próximo passo imediato:** `video_adapter` (YouTube/`yt-dlp`+Gemini) — 2ª fonte da ordem de ataque.
+**Fix de escala (2026-06-07):** backend local (Ollama) estourava o timeout de 60s do embedding com 8 workers concorrentes (default LightRAG); novo `embedding_max_async` (auto=2 p/ local) resolveu — sem ele, fontes com muitos chunks (vídeo) falhavam no flush do `vdb`.
+
+**Aprendizado de query:** para conteúdo **narrativo** (transcrição/prosa), `naive`/`mix` recuperam melhor que `hybrid` (que depende do grafo de entidades); `hybrid` brilha em docs com entidades discretas (normas).
+
+**Próximo passo:** `audio_adapter` (faster-whisper) → `db_adapter` (Supabase) → `comms_adapter`.

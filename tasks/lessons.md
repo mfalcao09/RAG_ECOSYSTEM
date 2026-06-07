@@ -37,3 +37,16 @@
   `{content_data}`) — o contexto recuperado some e o LLM responde "sem informação" mesmo com
   retrieval OK. Para instrução/guarda anti-injection, use `QueryParam.user_prompt` (o template
   já tem `{user_prompt}` e já instrui "answer ONLY using the provided Context").
+- **Backend local (Ollama) estoura timeout de embedding com a concorrência default.** O LightRAG
+  dispara `embedding_func_max_async=8` workers concorrentes; o Ollama é single-instance e serializa
+  → workers enfileiram e estouram o timeout de 60s (`Worker execution timeout` → `Failed to finalize
+  chunks_vdb`, o vdb não é gerado). Some em fontes de 1 chunk (web), aparece com muitos (vídeo/transcrição).
+  Fix: `embedding_func_max_async=2` (ou 1) via `lightrag_kwargs` p/ backend local (campo `embedding_max_async`).
+- **`naive`/`mix` > `hybrid` para conteúdo NARRATIVO (transcrição, prosa).** `hybrid`/`local`/`global`
+  dependem do grafo de entidades; se o fato não virou entidade discreta casável, o retrieval volta
+  vazio mesmo com o chunk indexado. `naive` (vetorial puro) recupera direto. `hybrid` é melhor p/ docs
+  com entidades nítidas (normas, fichas). Considerar default de query por tipo de fonte.
+- **Adapters: subagentes paralelos + contrato compartilhado = 0 conflito.** Orquestrador fixa `base.py`
+  (contrato) + `web.py` (template) ANTES; cada subagente cria só `<fonte>.py`+teste e NÃO toca
+  `__init__.py`/`requirements.txt` (pontos de conflito); orquestrador faz wiring + E2E serial (Ollama é
+  recurso único — não paralelizar a prova). 2 adapters em ~5 min vs sequencial.
