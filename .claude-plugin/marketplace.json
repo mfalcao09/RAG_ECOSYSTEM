@@ -1,0 +1,13 @@
+{
+  "name": "sistematiza-marketplace",
+  "owner": {
+    "name": "Marcelo Silva"
+  },
+  "plugins": [
+    {
+      "name": "sistematiza",
+      "source": "./sistematiza",
+      "description": "RAG poderoso sobre qualquer tema (RAG-Anything) + organização jurídica de normas: hierarquia, vigência/revogação e estruturação automática de pastas e assuntos."
+    }
+  ]
+}

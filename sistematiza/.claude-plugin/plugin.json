@@ -1,0 +1,9 @@
+{
+  "name": "sistematiza",
+  "version": "0.1.0",
+  "description": "RAG poderoso sobre qualquer tema (RAG-Anything) + organização jurídica de normas: hierarquia (CF>LC>Lei>Decreto>Portaria), vigência/revogação (marcando a revogada e por qual norma a revogou) e estruturação automática de pastas por assunto/tipo/órgão/ano.",
+  "author": {
+    "name": "Marcelo Silva"
+  },
+  "keywords": ["rag", "rag-anything", "lightrag", "normas", "juridico", "legislacao", "vigencia", "revogacao", "knowledge-base"]
+}

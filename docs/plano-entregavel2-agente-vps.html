@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entregável 2 — Agente de Sistematização Permanente (VPS)</title>
+<style>
+  :root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2330;--border:#30363d;--fg:#e6edf3;--muted:#9da7b3;--accent:#7c9cff;--accent2:#a78bfa;--amber:#d29922;--code:#0b0f14;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:960px;margin:0 auto;padding:48px 24px 96px}
+  h1{font-size:2rem;margin:.2em 0;letter-spacing:-.02em}
+  h2{font-size:1.35rem;margin:2em 0 .5em;padding-bottom:.3em;border-bottom:1px solid var(--border)}
+  h3{font-size:1.05rem;color:var(--accent);margin:1.4em 0 .3em}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  code{background:var(--code);border:1px solid var(--border);border-radius:5px;padding:.1em .4em;font-size:.86em;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;color:#c9d4e3}
+  pre{background:var(--code);border:1px solid var(--border);border-radius:10px;padding:16px 18px;overflow:auto}
+  pre code{background:none;border:none;padding:0;color:#9fb4d6;line-height:1.45;font-size:.82rem}
+  table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.92rem}
+  th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+  th{background:var(--panel2)}tr:nth-child(even) td{background:#11161f}
+  .status{background:linear-gradient(135deg,#241d0c,#1a1430);border:1px solid var(--amber);border-radius:14px;padding:18px 22px;margin-bottom:8px;color:#f0e6cf}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin:1em 0}
+  ol li,ul li{margin:.3em 0}
+  .q li{margin:.5em 0;padding-left:.2em}
+  .lead{color:var(--muted);border-left:3px solid var(--accent);padding-left:1em;font-style:italic}
+  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="status">
+    <h1>🛰️ Entregável 2 — Agente de Sistematização Permanente (VPS)</h1>
+    <p style="margin:.4em 0 0"><strong>STATUS: PLANO PARA DISCUSSÃO</strong> — não construído.
+    Marcelo pediu um agente permanente na VPS que faça RAG de todos os sistemas/pesquisas/trabalhos,
+    acessível via Claude Code, com plano apartado para alinharmos antes.</p>
+  </div>
+
+  <h2>1. Visão</h2>
+  <p>Um <strong>agente sempre ligado</strong> na VPS mantendo um <strong>RAG vivo de todo o ecossistema</strong>
+  (sistemas, repositórios, pesquisas, documentos, sessões, ANEEL, jurídico), consultável de qualquer
+  sessão Claude Code via MCP/HTTP seguro.</p>
+  <p class="lead">"Qualquer coisa que já produzimos ou estamos produzindo deve ser consultável em 1 pergunta,
+  com a fonte e a data."</p>
+
+  <h2>2. O que muda vs. Entregável 1</h2>
+  <table>
+    <tr><th>Dimensão</th><th>Entregável 1 (pronto)</th><th>Entregável 2 (este plano)</th></tr>
+    <tr><td>Execução</td><td>local, sob demanda</td><td><strong>permanente na VPS</strong></td></tr>
+    <tr><td>Fontes</td><td>arquivos que você aponta</td><td><strong>conectores automáticos</strong></td></tr>
+    <tr><td>Atualização</td><td>manual</td><td><strong>cron/reindex incremental</strong></td></tr>
+    <tr><td>Acesso</td><td>CLI/plugin local</td><td><strong>MCP server</strong> + HTTP</td></tr>
+    <tr><td>Storage</td><td>local/supabase por base</td><td><strong>central</strong> (pgvector multi-tenant)</td></tr>
+    <tr><td>Reuso</td><td>—</td><td><strong>motor <code>sistematiza/engine</code> vira o core</strong></td></tr>
+  </table>
+
+  <h2>3. Arquitetura proposta</h2>
+  <pre><code>Claude Code ──(MCP: sistematiza_query/ingest/sources)──▶ VPS (Hostinger)
+   auth server-to-server (Seção 11)                         │
+   ┌─────────────────────────────────────────────────────────┐
+   │ MCP server → Sistematiza-Service (FastAPI)               │
+   │   core = sistematiza/engine (RAG-Anything + LightRAG)    │
+   │ Connectors: GitHub · Notion · Drive · Gmail · Supabase   │
+   │             · ANEEL data lake · jurídico (normas)        │
+   │ Storage: Supabase (pgvector) — grafos + vetores          │
+   └─────────────────────────────────────────────────────────┘</code></pre>
+  <div class="card">
+    <strong>Componentes:</strong> (1) Sistematiza-Service FastAPI reusando o motor pronto;
+    (2) Connectors com ingestão incremental por fonte; (3) Scheduler (cron/systemd + webhooks);
+    (4) MCP server expondo as tools ao CC; (5) Storage central Supabase pgvector multi-tenant.
+  </div>
+
+  <h2>4. Segurança (Seção 11 — obrigatória)</h2>
+  <ul>
+    <li>API key server-side (bcrypt no banco), nunca no frontend/CC bundle.</li>
+    <li>CC ↔ VPS via proxy/Edge com JWT curto ou API key server-to-server.</li>
+    <li>Prompt-injection shield na ingestão (limite de chars, blocklist, log com hash).</li>
+    <li>Anti-bot + rate limit (Traefik); honeytoken <code>/api/trap</code>.</li>
+    <li>Docs sensíveis (jurídico) → backend LLM <strong>local na VPS</strong> (Ollama), sem sair da infra.</li>
+  </ul>
+
+  <h2>5. Fases</h2>
+  <ol>
+    <li><strong>F0 — Fundação:</strong> empacotar o motor como lib; subir FastAPI com 1 fonte E2E.</li>
+    <li><strong>F1 — MCP + Auth:</strong> MCP server + auth; <code>sistematiza_query</code> no seu CC.</li>
+    <li><strong>F2 — Connectors:</strong> Notion, Drive, Supabase, ANEEL; incremental + scheduler.</li>
+    <li><strong>F3 — Jurídico vivo:</strong> pipeline Planalto/LexML auto-populando o modo de normas.</li>
+    <li><strong>F4 — Hardening:</strong> Seção 11 completa + observabilidade.</li>
+  </ol>
+
+  <h2>6. Decisões abertas (preciso de você)</h2>
+  <ol class="q">
+    <li><strong>VPS/região:</strong> qual VPS Hostinger e região?</li>
+    <li><strong>Backend LLM na VPS:</strong> Ollama local, nuvem, ou misto por sensibilidade?</li>
+    <li><strong>Storage central:</strong> Supabase pgvector ou Postgres dedicado? Multi-tenant por workspace?</li>
+    <li><strong>Acesso do CC:</strong> MCP server (recomendo) ou HTTP+skill?</li>
+    <li><strong>Fontes prioritárias:</strong> ordem? (sugiro repos Intentus → Notion Sessões → ANEEL → jurídico)</li>
+    <li><strong>Cadência de reindex:</strong> webhook onde der + cron diário?</li>
+    <li><strong>Orçamento/custo-alvo:</strong> teto mensal (define local vs nuvem e tamanho da VPS).</li>
+    <li><strong>Multi-usuário:</strong> só você ou a equipe Nexvy também consulta?</li>
+  </ol>
+
+  <footer>
+    Próximo passo: ao responder as 8 decisões, eu converto este plano em <code>tasks/todo.md</code>
+    executável e começamos pela F0 (reuso do motor já pronto). Gerado em 2026-06-06.
+  </footer>
+
+</div>
+</body>
+</html>

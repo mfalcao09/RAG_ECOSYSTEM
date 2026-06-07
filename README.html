@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistematiza — RAG + Organização Jurídica de Normas</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --border:#30363d;
+    --fg:#e6edf3; --muted:#9da7b3; --accent:#7c9cff; --accent2:#a78bfa;
+    --green:#3fb950; --red:#f85149; --amber:#d29922; --code:#0b0f14;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:980px;margin:0 auto;padding:48px 24px 96px}
+  h1{font-size:2.2rem;margin:.2em 0;letter-spacing:-.02em}
+  h2{font-size:1.45rem;margin:2.2em 0 .6em;padding-bottom:.3em;border-bottom:1px solid var(--border)}
+  h3{font-size:1.12rem;margin:1.6em 0 .4em;color:var(--accent)}
+  p,li{color:var(--fg)}
+  .lead{color:var(--muted);font-size:1.08rem;border-left:3px solid var(--accent);padding:.4em 0 .4em 1em;margin:1em 0}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  code{background:var(--code);border:1px solid var(--border);border-radius:5px;padding:.1em .4em;font-size:.88em;
+    font-family:"SF Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#c9d4e3}
+  pre{background:var(--code);border:1px solid var(--border);border-radius:10px;padding:16px 18px;overflow:auto}
+  pre code{background:none;border:none;padding:0;color:#c9d4e3;line-height:1.5}
+  table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.93rem}
+  th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--fg)}
+  tr:nth-child(even) td{background:#11161f}
+  .pill{display:inline-block;padding:.15em .6em;border-radius:999px;font-size:.78rem;font-weight:600;border:1px solid}
+  .ok{color:var(--green);border-color:#1f6f33;background:#0f2417}
+  .warn{color:var(--amber);border-color:#6b5212;background:#241d0c}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin:1.2em 0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .tag{display:inline-block;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:.1em .5em;margin:.1em;font-size:.8rem;color:var(--muted)}
+  .hero{background:linear-gradient(135deg,#161b22,#1a1430);border:1px solid var(--border);border-radius:16px;padding:28px 30px;margin-bottom:8px}
+  .kbd{color:var(--accent2)}
+  footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--border);color:var(--muted);font-size:.85rem}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1>📚 Sistematiza</h1>
+    <p class="lead" style="border:none;padding:0;margin:.4em 0 0">
+      <strong>RAG poderoso sobre qualquer tema</strong> (sobre
+      <a href="https://github.com/HKUDS/RAG-Anything">RAG-Anything</a>)
+      <strong>+ organização jurídica de normas</strong>: hierarquia, vigência/revogação e
+      estruturação automática de pastas — empacotado como <strong>plugin + agente Claude Code</strong>.
+    </p>
+    <div style="margin-top:14px">
+      <span class="tag">rag-anything</span><span class="tag">lightrag</span>
+      <span class="tag">normas</span><span class="tag">vigência/revogação</span>
+      <span class="tag">plugin claude code</span><span class="tag">agente</span>
+    </div>
+  </div>
+
+  <p>Transforma documentos soltos em conhecimento <strong>organizado</strong> e <strong>consultável</strong>.
+  No domínio jurídico é uma feature de 1ª classe: entende a hierarquia das fontes do direito
+  (CF&nbsp;&gt;&nbsp;LC&nbsp;&gt;&nbsp;Lei&nbsp;&gt;&nbsp;Decreto&nbsp;&gt;&nbsp;Portaria), calcula
+  <strong>vigência e revogação</strong> automaticamente (marcando a norma revogada <em>e por qual norma</em>)
+  e organiza tudo em pastas por assunto/tipo/órgão/ano — da <strong>mais atual para a mais antiga</strong>.</p>
+
+  <h2>Arquitetura</h2>
+  <pre><code>sistematiza/                         (repositório = marketplace de 1 plugin)
+├── .claude-plugin/marketplace.json  ← lista o plugin
+├── sistematiza/                     ← o PLUGIN
+│   ├── .claude-plugin/plugin.json
+│   ├── agents/sistematizador.md     ← agente orquestrador
+│   ├── commands/                    ← /sistematiza:new|ingest|query|normas|organize|status
+│   ├── skills/
+│   │   ├── rag-sistematizacao/      ← modo genérico (RAG)
+│   │   └── normas-juridicas/        ← modo jurídico (1ª classe)
+│   └── engine/                      ← MOTOR Python
+│       ├── sistematiza.py           ← CLI
+│       ├── st_config.py · st_backends.py · st_storage.py
+│       ├── normas/  taxonomy · model · vigencia · organizer  (stdlib puro)
+│       └── tests/   6 testes verdes
+└── setup.sh · templates/ · README.md/.html</code></pre>
+
+  <div class="card">
+    <strong>Princípio-chave — <span class="kbd">lazy import</span>:</strong> o subsistema
+    <code>normas/</code> é <strong>stdlib puro</strong> (Python 3.9+, sem RAG-Anything). Só
+    <code>ingest</code>/<code>query</code> importam o motor pesado. Você organiza milhares de normas
+    <strong>hoje</strong>, sem baixar 1&nbsp;GB de modelos nem gastar token de API.
+  </div>
+
+  <h2>Instalação como plugin Claude Code</h2>
+  <pre><code>/plugin marketplace add ~/Projects/GitHub/sistematiza
+/plugin install sistematiza@sistematiza-marketplace</code></pre>
+  <p>Comandos: <code>/sistematiza:new</code>, <code>/sistematiza:ingest</code>,
+  <code>/sistematiza:query</code>, <code>/sistematiza:normas</code>,
+  <code>/sistematiza:organize</code>, <code>/sistematiza:status</code>. O agente
+  <strong>sistematizador</strong> é acionado automaticamente.</p>
+
+  <h2>Uso — modo jurídico (normas)</h2>
+  <pre><code>PY="python3 sistematiza/engine/sistematiza.py"
+$PY init ./licitacoes --name "Licitações" --modo normas --backend ollama --storage local
+$PY normas import ./licitacoes sistematiza/engine/tests/sample_normas.json
+$PY normas organize ./licitacoes</code></pre>
+
+  <p>Gera, em <code>./licitacoes/normas/</code>: <code>_INDICE.md</code> (mais recente primeiro;
+  ⛔ revogadas com a revogadora), <code>_INDICE.json</code>, <code>acervo/&lt;chave&gt;.md</code>,
+  <code>vigentes/</code>, <code>revogadas/</code>, <code>por-assunto/</code>, <code>por-tipo/</code>,
+  <code>por-orgao/</code>, <code>por-ano/</code>.</p>
+
+  <div class="card">
+    <strong>Exemplo de linha do índice mestre:</strong>
+    <pre style="margin:.6em 0 0"><code>- ⛔ <b>Lei Ordinária nº 8.666/1993</b> — Regulamenta o art. 37, XXI... —
+     <i>REVOGADA por Lei Ordinária nº 14.133/2021 (2021)</i></code></pre>
+  </div>
+
+  <h3>Schema de uma Norma (registry.json)</h3>
+  <table>
+    <tr><th>Campo</th><th>Exemplo</th><th>Notas</th></tr>
+    <tr><td><code>tipo</code></td><td>"lei_ordinaria"</td><td>chave canônica ou texto livre</td></tr>
+    <tr><td><code>numero</code> / <code>ano</code></td><td>"14.133" / 2021</td><td></td></tr>
+    <tr><td><code>data</code></td><td>"2021-04-01"</td><td>ISO 8601</td></tr>
+    <tr><td><code>orgao</code> / <code>esfera</code></td><td>"Congresso Nacional" / "federal"</td><td></td></tr>
+    <tr><td><code>assuntos</code></td><td>["licitações", ...]</td><td>vira faceta <code>por-assunto/</code></td></tr>
+    <tr><td><code>revoga</code></td><td>["lei_ordinaria-8.666-1993"]</td><td>referencia <b>chaves</b> <code>&lt;tipo&gt;-&lt;numero&gt;-&lt;ano&gt;</code></td></tr>
+  </table>
+  <p><strong>Hierarquia (rank menor = mais alto):</strong> CF(1) · EC(2) · Tratado(3) · LC(4) ·
+  Lei/MP/Decreto-Lei(5) · Decreto(6) · IN/Resolução(7) · Portaria(8) · ...<br>
+  <strong>Vigência (automática, bidirecional):</strong> declarar <code>revoga</code> na revogadora
+  propaga <code>revogada_por</code> para a revogada.</p>
+
+  <h2>Uso — modo genérico (RAG sobre qualquer tema)</h2>
+  <pre><code>$PY init ./pesquisa --modo generico --backend ollama --storage local
+$PY ingest ./pesquisa ./meus-pdfs --recursive
+$PY query  ./pesquisa "Qual a conclusão do estudo X?" --mode hybrid</code></pre>
+  <p>Modos de query: <code>naive · local · global · hybrid</code> (recomendado) <code>· mix · bypass</code>.</p>
+
+  <h2>Backends &amp; Storage (configurável por base)</h2>
+  <div class="grid">
+    <div class="card">
+      <h3 style="margin-top:0">Backend LLM</h3>
+      <table style="margin:0">
+        <tr><th>Backend</th><th>Quando</th></tr>
+        <tr><td><code>ollama</code> / <code>lmstudio</code></td><td>Local/privado — docs sensíveis, custo 0</td></tr>
+        <tr><td><code>openai</code></td><td>Nuvem, rápido</td></tr>
+        <tr><td><code>claude_openai_emb</code></td><td>Claude + embeddings nuvem</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Storage</h3>
+      <table style="margin:0">
+        <tr><th>Tipo</th><th>Notas</th></tr>
+        <tr><td><code>local</code></td><td>working_dir em disco (default)</td></tr>
+        <tr><td><code>supabase</code></td><td>Postgres + pgvector (experimental)</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card" style="border-color:#6b5212">
+    🔒 <strong>Segurança (Seção 11):</strong> chaves de API <strong>nunca</strong> no
+    <code>.sistematiza.json</code> — só o <strong>nome</strong> da env var (<code>api_key_env</code>).
+    Antes de ingest/query na nuvem: <code>export OPENAI_API_KEY=...</code>. Docs jurídicos sensíveis
+    → backend local (nada sai para a nuvem).
+  </div>
+
+  <h2>Verificação (estado atual)</h2>
+  <table>
+    <tr><th>Item</th><th>Status</th></tr>
+    <tr><td>py_compile (10 arquivos)</td><td><span class="pill ok">✅ OK</span></td></tr>
+    <tr><td>Testes unitários (normas/)</td><td><span class="pill ok">✅ 6/6</span></td></tr>
+    <tr><td>Smoke E2E (init→import→organize→status)</td><td><span class="pill ok">✅ 6 normas · 4 vigentes · 2 revogadas</span></td></tr>
+    <tr><td>Índice: ordem + revogadas marcadas</td><td><span class="pill ok">✅</span></td></tr>
+    <tr><td>ingest/query end-to-end</td><td><span class="pill warn">⏳ requer venv 3.11/3.12 + modelos MinerU</span></td></tr>
+    <tr><td>Storage supabase</td><td><span class="pill warn">⏳ experimental</span></td></tr>
+  </table>
+
+  <h2>Roadmap</h2>
+  <ul>
+    <li><strong>Entregável 2</strong> — agente de sistematização <strong>permanente na VPS</strong>,
+      RAG de todos os sistemas/pesquisas/trabalhos (plano apartado:
+      <code>docs/plano-entregavel2-agente-vps.md</code>).</li>
+    <li>Conectores de fonte (Planalto/LexML) para auto-popular o <code>registry.json</code>.</li>
+    <li>Versões consolidadas de normas (texto vigente vs. original).</li>
+  </ul>
+
+  <footer>
+    Motor RAG: <a href="https://github.com/HKUDS/RAG-Anything">HKUDS/RAG-Anything</a>
+    (multimodal RAG sobre LightRAG). Plugin / agente / inteligência jurídica: Marcelo Silva.
+    Gerado em 2026-06-06.
+  </footer>
+
+</div>
+</body>
+</html>

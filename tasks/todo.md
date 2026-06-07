@@ -1,0 +1,69 @@
+# tasks/todo.md — Sistematiza (Entregável 1)
+
+> Plano da sessão 2026-06-06. Plugin + agente Claude Code sobre RAG-Anything,
+> com organização jurídica de normas como feature de 1ª classe.
+
+## Decisões (de Marcelo, via AskUserQuestion)
+- Deliverable: **Entregável 1 agora** (plugin CC orquestra RAG local); Entregável 2 (agente VPS permanente) = plano apartado.
+- Backend: **configurável por base** (ollama/lmstudio/openai/claude_openai_emb).
+- Storage: **decidir por base** (local/supabase).
+- Camada jurídica: **feature de 1ª classe** (vigência/revogação/hierarquia).
+
+## Plano (verificável — Seção 8.3)
+- [x] Mapear API real do RAG-Anything (subagente Explore) → verifica: relatório com assinaturas exatas ✔
+- [x] Subsistema jurídico `normas/` (taxonomy/model/vigencia/organizer) → verifica: 6/6 testes unitários ✔
+- [x] CLI `sistematiza.py` (init/normas/ingest/query/status/doctor, lazy import) → verifica: `--help` + smoke ✔
+- [x] Backends configuráveis (`st_backends.py`) → verifica: py_compile + assinaturas conforme mapa ✔
+- [x] Storage por base (`st_storage.py`, local/supabase) → verifica: py_compile + local testado no smoke ✔
+- [x] Wrapper do plugin: `plugin.json`, `marketplace.json`, agente, 6 commands, 2 skills → verifica: plugin-validator
+- [x] `setup.sh`, `.gitignore`, template de config → verifica: leitura + sem segredos versionáveis
+- [x] README `.md` + `.html` pareados (Seção 4)
+- [x] Verificação multi-agente (estrutura + python vs API real + segurança + completude)
+- [x] Correção dos 10 achados reais da revisão (2 críticos + 3 altos + segurança + completude)
+- [x] Plano do Entregável 2 (agente VPS) em `.md` + `.html`
+
+## Review v2 (pós-revisão adversarial)
+Revisão multi-agente (4 perspectivas, 355k tokens) deu correção=FAIL → corrigido tudo:
+- 🔴 `finalize()`→`finalize_storages()`; `openai_embed`→`.func()`
+- 🟠 `query` agora chama `_ensure_lightrag_initialized()`; storage supabase usa classes PG (lazy); ollama `resp.embeddings`
+- 🔒 path-traversal em `working_dir`/`--out` validados; system-guard + cap anti prompt-injection na query
+- 🧩 faceta `por-situacao/` (cobre vacatio/parcial); comando `normas extract` (heurístico→conferência); título via `cfg.base_name`; aviso de referências órfãs
+- ✅ +3 testes (extractor, backends-mock, cobertura) → **11/11 verdes**; `__pycache__` limpo
+
+## Review
+**Prova de funcionamento (smoke real em /tmp):**
+- `py_compile`: OK (10 arquivos)
+- `unittest`: 6/6 PASS
+- `init` → `normas import` (6) → `normas organize`: total=6, vigentes=4, revogadas=2
+- `_INDICE.md`: ordenado mais-recente-primeiro; Lei 8.666/1993 e 10.520/2002 marcadas
+  **⛔ REVOGADA por Lei Ordinária nº 14.133/2021 (2021)**
+- Pastas: `acervo/ por-assunto/ por-tipo/ por-orgao/ por-ano/ vigentes/ revogadas/`
+- `doctor`: degrada graciosamente sem o RAG pesado (lazy import confirmado)
+
+**Pendências conhecidas:** ingest/query dependem de backend ativo (não exercitado end-to-end
+nesta sessão — exige venv 3.11/3.12 + modelos MinerU ~1GB). Caminho supabase é experimental.
+
+## Review v3 — E2E RAG documental FECHADO (2026-06-06)
+
+A pendência "ingest/query end-to-end" foi resolvida. Prova real com stack 100% local
+(Ollama `qwen2.5:3b` + `bge-m3`, MinerU 3.2.3), doc de teste com fato único verificável.
+
+**3 bugs encadeados corrigidos (só visíveis com backend real — o smoke com mock não pegava):**
+1. 🔴 **MinerU backend** — o default do MinerU 3.x é `hybrid-auto-engine` (VLM), que estoura
+   a RAM (OOM em `Predict: 0%`). Novo campo `mineru_backend="pipeline"` em `st_config`
+   (leve, CPU; configurável por base) + `cmd_ingest` passa `backend=` ao parser.
+2. 🔴 **Embedding** — o branch ollama devolvia `list`; o LightRAG faz `result.size` → exige
+   `np.ndarray`. `st_backends._embed` agora retorna `np.array(...)`. Quebrava o flush do
+   `NanoVectorDBStorage[entities]` (os `vdb_*.json` nem eram gerados).
+3. 🔴 **Query** — `system_prompt=SYSTEM_GUARD` SUBSTITUÍA o template `naive_rag_response`,
+   levando embora o placeholder `{content_data}` (o contexto). O LLM respondia "sem
+   informação". Corrigido para `user_prompt=QUERY_GUARD` (QueryParam) — preserva o contexto.
+
+**Prova:** ingest → working_dir populado (grafo 11 nós/2 arestas + `vdb_chunks/entities/relationships.json`);
+query (hybrid e naive) recupera os fatos do doc (orçamento R$ 4.880.000, coordenadora, data,
+cidade) com `References: doc-teste-sistematiza.pdf`. Sem OOM (RAM estável ~120 MB livre;
+199s ingest / ~50s query). **+3 testes de regressão (`test_e2e_regression.py`) → 19/19 verdes.**
+
+**Pendências restantes:** (a) repo **SEM git** inicializado (risco de perda); (b) `README.html`
+precisa re-render do `.md`; (c) storage supabase ainda experimental; (d) `qwen2.5:3b` (3B) comete
+pequenos erros de transcrição ("quatro milhão") — modelo maior melhora a fidelidade.

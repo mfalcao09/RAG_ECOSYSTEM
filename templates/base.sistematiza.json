@@ -1,0 +1,20 @@
+{
+  "base_name": "exemplo-licitacoes",
+  "modo": "normas",
+  "backend": {
+    "provider": "ollama",
+    "llm_model": "qwen2.5:7b",
+    "vision_model": "llama3.2-vision",
+    "embedding_model": "nomic-embed-text",
+    "embedding_dim": 768,
+    "base_url": "http://localhost:11434/v1",
+    "api_key_env": "",
+    "api_key_literal": "ollama"
+  },
+  "storage": {
+    "kind": "local",
+    "working_dir": "./rag_storage"
+  },
+  "parser": "mineru",
+  "parse_method": "auto"
+}

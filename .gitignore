@@ -1,0 +1,20 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Segredos — NUNCA versionar (Seção 11)
+.env
+*.env
+*secret*
+*api_key*
+*client_secret*
+
+# Dados de bases de conhecimento (índices RAG, saídas, working_dir)
+**/rag_storage/
+**/output/
+**/saida/
+
+# OS
+.DS_Store
