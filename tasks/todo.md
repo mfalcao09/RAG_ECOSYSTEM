@@ -67,3 +67,16 @@ cidade) com `References: doc-teste-sistematiza.pdf`. Sem OOM (RAM estável ~120 
 **Pendências restantes:** (a) repo **SEM git** inicializado (risco de perda); (b) `README.html`
 precisa re-render do `.md`; (c) storage supabase ainda experimental; (d) `qwen2.5:3b` (3B) comete
 pequenos erros de transcrição ("quatro milhão") — modelo maior melhora a fidelidade.
+
+## Review v4 — Camada de ingest adapters + web_adapter (2026-06-07)
+
+Início da virada "sistematiza" (arquivos) → **RAG_ECOSYSTEM** (qualquer fonte). Ver `docs/ARSENAL-RAG.md`.
+
+**Entregue:**
+- Versionado em `github.com/mfalcao09/RAG_ECOSYSTEM` (commits `022bc57`, `03c4ee2`, …) — sem segredos; `.venv`/`output` ignorados. (Fecha a pendência "a".)
+- `docs/ARSENAL-RAG.md`+`.html`: mapa do arsenal (7 fontes × ferramentas × maturidade) + arquitetura de adapters + ordem de ataque.
+- **Camada de adapters** (`engine/adapters/`): contrato `SourceAdapter` (`can_handle`/`fetch`) + registro `resolve()`. Adicionar fonte = +1 arquivo, core intacto.
+- **`web_adapter`**: URL → markdown (trafilatura + fallback httpx/bs4) → `insert_content_list` (bypassa MinerU). `cmd_ingest` resolve adapter antes do parser de arquivo.
+- **E2E web PROVADO**: `https://example.com` → grafo (6 nós/3 arestas) + `vdb_*.json`; `query` com `Referências: https://example.com` (57s ingest / 31s query). +7 testes → **26/26 verdes**.
+
+**Próximo:** `video_adapter` (YouTube via `yt-dlp`+Gemini) → `docs_adapter` (Notion) → áudio/db/comms (§6 do ARSENAL).

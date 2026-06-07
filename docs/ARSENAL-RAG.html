@@ -1,22 +1,5 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RAG_ECOSYSTEM — Mapa do Arsenal</title>
-<style>
-:root{color-scheme:dark}*{box-sizing:border-box}
-body{background:#0d1117;color:#c9d1d9;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.65;max-width:920px;margin:0 auto;padding:48px 24px}
-h1,h2,h3{color:#e6edf3;line-height:1.3;margin-top:1.8em}
-h1{font-size:2em;border-bottom:2px solid #30363d;padding-bottom:.3em}
-h2{font-size:1.45em;border-bottom:1px solid #21262d;padding-bottom:.25em;color:#58a6ff}
-h3{font-size:1.15em;color:#79c0ff}
-a{color:#58a6ff;text-decoration:none}a:hover{text-decoration:underline}
-code{background:#161b22;color:#79c0ff;padding:.15em .4em;border-radius:6px;font-size:.88em;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-pre{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:16px;overflow-x:auto}
-pre code{background:none;color:#c9d1d9;padding:0}
-table{border-collapse:collapse;width:100%;margin:1.2em 0;font-size:.92em}
-th,td{border:1px solid #30363d;padding:8px 12px;text-align:left;vertical-align:top}
-th{background:#161b22;color:#e6edf3}tr:nth-child(even){background:#0f141a}
-blockquote{border-left:3px solid #3fb950;margin:1.2em 0;padding:.4em 1em;color:#8b949e;background:#0f141a;border-radius:0 8px 8px 0}
-hr{border:none;border-top:1px solid #30363d;margin:2em 0}strong{color:#e6edf3}
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>RAG_ECOSYSTEM — Mapa do Arsenal</title><style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{background:#0d1117;color:#c9d1d9;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.65;max-width:920px;margin:0 auto;padding:48px 24px}h1,h2,h3{color:#e6edf3;line-height:1.3;margin-top:1.8em}h1{font-size:2em;border-bottom:2px solid #30363d;padding-bottom:.3em}h2{font-size:1.45em;border-bottom:1px solid #21262d;padding-bottom:.25em;color:#58a6ff}h3{font-size:1.15em;color:#79c0ff}a{color:#58a6ff;text-decoration:none}a:hover{text-decoration:underline}code{background:#161b22;color:#79c0ff;padding:.15em .4em;border-radius:6px;font-size:.88em;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}pre{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:16px;overflow-x:auto}pre code{background:none;color:#c9d1d9;padding:0}table{border-collapse:collapse;width:100%;margin:1.2em 0;font-size:.92em}th,td{border:1px solid #30363d;padding:8px 12px;text-align:left;vertical-align:top}th{background:#161b22;color:#e6edf3}tr:nth-child(even){background:#0f141a}blockquote{border-left:3px solid #3fb950;margin:1.2em 0;padding:.4em 1em;color:#8b949e;background:#0f141a;border-radius:0 8px 8px 0}hr{border:none;border-top:1px solid #30363d;margin:2em 0}strong{color:#e6edf3}
 </style></head><body>
 <h1>RAG_ECOSYSTEM — Mapa do Arsenal &amp; Arquitetura de Adapters</h1>
 <blockquote>
@@ -194,7 +177,7 @@ class SourceAdapter(Protocol):
 </tr>
 <tr>
 <td><code>web_adapter</code> (1ª fonte externa)</td>
-<td>🔜 em implementação</td>
+<td>✅ <strong>E2E provado</strong> — URL→query com citação (trafilatura + fallback bs4); <code>engine/adapters/</code></td>
 </tr>
 <tr>
 <td>Demais adapters</td>
@@ -202,5 +185,6 @@ class SourceAdapter(Protocol):
 </tr>
 </tbody>
 </table>
-<p><strong>Próximo passo imediato:</strong> implementar e provar o <strong><code>web_adapter</code></strong> (URL real → markdown → <code>insert_content_list</code> → query).</p>
+<p><strong>Provado (2026-06-07):</strong> <code>sistematiza ingest &lt;base&gt; https://example.com</code> → grafo (6 nós/3 arestas) + <code>vdb_*.json</code>; <code>query</code> recupera o conteúdo <strong>com <code>Referências: https://example.com</code></strong>, em 57s (ingest) / 31s (query), <strong>sem MinerU</strong> (a URL já chega como markdown). 26/26 testes (7 de adapters).</p>
+<p><strong>Próximo passo imediato:</strong> <code>video_adapter</code> (YouTube/<code>yt-dlp</code>+Gemini) — 2ª fonte da ordem de ataque.</p>
 <hr><p style="color:#6e7681;font-size:.85em">Gerado de <code>ARSENAL-RAG.md</code> · RAG_ECOSYSTEM · self-contained</p></body></html>

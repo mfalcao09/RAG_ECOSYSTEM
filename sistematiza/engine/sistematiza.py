@@ -329,9 +329,17 @@ def cmd_ingest(args) -> int:
     if _cfg.parser == "mineru" and getattr(_cfg, "mineru_backend", ""):
         parser_kw["backend"] = _cfg.mineru_backend
 
+    import adapters  # camada de FONTES (web, ...): ref externa → insert_content_list (bypassa parser)
+
     async def run():
-        for path in args.paths:
-            p = os.path.abspath(path)
+        for raw in args.paths:
+            adapter = adapters.resolve(raw)
+            if adapter is not None:               # fonte externa (URL etc.)
+                _print(f"   → fonte '{adapter.name}': {raw}")
+                blocks = adapter.fetch(raw)
+                await rag.insert_content_list(content_list=blocks, file_path=raw)
+                continue
+            p = os.path.abspath(raw)              # arquivo/pasta local → parser MinerU
             if os.path.isdir(p):
                 await rag.process_folder_complete(folder_path=p, recursive=args.recursive, **parser_kw)
             else:

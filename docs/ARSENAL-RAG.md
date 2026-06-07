@@ -117,7 +117,9 @@ Cada fonte entra com **prova E2E real** (URL/arquivo real → query recupera fat
 | Motor RAG documental (PDF/Office/imagem) | ✅ E2E provado (Ollama+MinerU local, 19/19 testes) |
 | Versionamento (`RAG_ECOSYSTEM`) | ✅ commit `022bc57` |
 | Este mapa do arsenal | ✅ cristalizado (`.md`/`.html`) |
-| `web_adapter` (1ª fonte externa) | 🔜 em implementação |
+| `web_adapter` (1ª fonte externa) | ✅ **E2E provado** — URL→query com citação (trafilatura + fallback bs4); `engine/adapters/` |
 | Demais adapters | 📋 backlog priorizado (§6) |
 
-**Próximo passo imediato:** implementar e provar o **`web_adapter`** (URL real → markdown → `insert_content_list` → query).
+**Provado (2026-06-07):** `sistematiza ingest <base> https://example.com` → grafo (6 nós/3 arestas) + `vdb_*.json`; `query` recupera o conteúdo **com `Referências: https://example.com`**, em 57s (ingest) / 31s (query), **sem MinerU** (a URL já chega como markdown). 26/26 testes (7 de adapters).
+
+**Próximo passo imediato:** `video_adapter` (YouTube/`yt-dlp`+Gemini) — 2ª fonte da ordem de ataque.
